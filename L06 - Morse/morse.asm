@@ -104,18 +104,18 @@ getSequence:	mov.b	@r5+,r6
             call    #delay
             jmp 	done
 
-doDash:		mov.w   #ELEMENT*3,r15          ; output DASH
+doDash:		mov.w   #ELEMENT*2,r15          ; output DASH
             call    #beep
             mov.w   #ELEMENT,r15            ; delay 1 element
             call    #delay
 
 done:		jmp     getSequence                    ; repeat
 
-charSpace:	mov.w	#ELEMENT*3,r15
+charSpace:	mov.w	#ELEMENT*2,r15
 			call	#delay
 			jmp		getLetter
 
-space:      mov.w   #ELEMENT*7,r15          ; output space
+space:      mov.w   #ELEMENT*6,r15          ; output space
             call    #delay                  ; delay
             jmp		getLetter
 ; end main function ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
