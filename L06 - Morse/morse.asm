@@ -58,7 +58,8 @@ RESET:      mov.w   #STACK,SP               ; initialize stack pointer
 main_asm:   mov.w   #WDT_CTL,&WDTCTL        ; set WD timer interval
             mov.b   #WDTIE,&IE1             ; enable WDT interrupt
             bis.b   #0x6F,&P4DIR            ; set P4.5 as output (speaker)
-            bic.b	#0x6f,&P4OUT
+            bic.b	#0x67,&P4OUT
+            bis.b	#8,&P4OUT
             clr.w   &beep_cnt               ; clear counters
             clr.w   &delay_cnt
             clr.w   &debounce_cnt
@@ -156,8 +157,18 @@ WDT_ISR:
            xor.b   #0x0f,r14             ; any switches?
              jeq   WDT_01                ; n
            bit.b	#1,r14
-             jeq	WDT_01
+             jeq	switch2
            xor.b	#0x20,&P4DIR
+           jmp		WDT_01
+
+switch2:	bit.b	#2,r14
+			  jeq	switch3
+			dec.w	&P4OUT
+			jmp		WDT_01
+
+switch3:	bit.b	#4,r14
+			  jeq	WDT_01
+			inc.w	&P4OUT
 
 
 
