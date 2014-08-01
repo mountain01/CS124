@@ -33,6 +33,7 @@
             .def	beep_cnt
             .def	delay_cnt
             .def	debounce_cnt
+            .def	message
 
 ; Morse Code equates ----------------------------------------------------------
 
@@ -139,11 +140,6 @@ delay:      mov.w   r12,&delay_cnt          ; start delay
 delay02:    tst.w   &delay_cnt              ; delay done?
               jne   delay02                 ; n
             ret                             ; y
-; Port 1 ISR -------------------------------------------------------------------
-DEBOUNCE   .equ    10
-P1_ISR:    bic.b   #0x0f,&P1IFG          ; acknowledge (put hands down)
-           mov.w   #DEBOUNCE,debounce_cnt ; reset debounce count
-           reti
 
 ; Watchdog Timer ISR ----------------------------------------------------------
 WDT_ISR:
@@ -188,8 +184,8 @@ WDT_10:     reti                            ; return from interrupt
 ; Interrupt Vectors -----------------------------------------------------------
             .sect   ".int10"                ; Watchdog Vector
             .word   WDT_ISR                 ; Watchdog ISR
-            .sect	".int02"
-            .word	P1_ISR
+            ;.sect	".int02"
+            ;.word	P1_ISR
 
             ;.sect   ".reset"                ; PUC Vector
             ;.word   RESET                   ; RESET ISR

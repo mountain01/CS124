@@ -15,6 +15,7 @@
 #define WDT_IPS    myCLOCK/WDT_CPI         // WDT Interrupts Per Second
 #define STACK      0x0600                  // top of stack
 #define ELEMENT    WDT_IPS*240/1000        // (WDT_IPS * 6 / WPM) / 5
+#define DEBOUNCE   10
 
 
 #endif /* MORSE2_H_ */
