@@ -115,7 +115,7 @@ charSpace:	mov.w	#ELEMENT*2,r15
 			call	#delay
 			jmp		getLetter
 
-space:      mov.w   #ELEMENT*6,r15          ; output space
+space:      mov.w   #ELEMENT*4,r15          ; output space
             call    #delay                  ; delay
             jmp		getLetter
 ; end main function ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

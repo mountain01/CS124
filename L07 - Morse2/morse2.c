@@ -29,7 +29,7 @@ void doDot(){
 }
 
 void doSpace(){
-	delay(ELEMENT*6);
+	delay(ELEMENT*4);
 }
 
 void charSpace(){
