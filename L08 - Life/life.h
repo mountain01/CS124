@@ -46,9 +46,9 @@
 #define MAX_TIME		60
 
 //make Macros
-#define TEST(A,c) (A[(c)/8] & (0x80 >> ((c)&0x07)))
-#define KILL(a,c) (a[(c)/8] &= ~(0x80 >> ((c)&0x07)))
-#define REVIVE(a,c) (a[(c)/8] |= (0x80 >> (c) &0x07))
+#define TEST(A,c) ((A)[(c)/8] & (0x80 >> ((c)&0x07)))
+#define KILL(a,c) ((a)[(c)/8] &= ~(0x80 >> ((c)&0x07)))
+#define REVIVE(a,c) ((a)[(c)/8] |= (0x80 >> (c) &0x07))
 
 #define DEBOUNCE_CNT	2
 

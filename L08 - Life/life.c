@@ -136,23 +136,39 @@ void main(void)
 
 		while (1)						// next generation
 		{
+			memcpy(life_pr,life[NUM_ROWS-2], sizeof(uint8));
+			memcpy(life_cr,life[NUM_ROWS-3], sizeof(uint8));
+			memcpy(life_nr,life[NUM_ROWS-4], sizeof(uint8));
 			// for each life row (78 down to 1)
 			for (row = NUM_ROWS-2; row; row -= 1)
 			{
 				// for each life column (78 down to 1)
 				for (col = NUM_COLS-2; col; col -= 1)
 				{
-					//vvv DEMO ONLY - REPLACE WITH YOUR CODE vvvvvvvvvvvvvv
-					life[row][col >> 3] ^= 0x80 >> (col & 0x07);	// toggle cell
-					// test cell and display 2x2 cell if alive
-					if (life[row][col >> 3] & (0x80 >> (col & 0x07)))
-						lcd_point(col << 1, row << 1, 7);			// live cell
-					else
-						lcd_point(col << 1, row << 1, 6);			// dead cell
-					//^^^ DEMO ONLY - REPLACE WITH YOUR CODE ^^^^^^^^^^^^^^
+					//cell calculations
+					int cellCount = 0;
+					int alive = TEST(life_cr,col);
+					if(TEST(life_pr,col-1)) cellCount++;
+					if(TEST(life_pr,col)) cellCount++;
+					if(TEST(life_pr,col+1)) cellCount++;
+					if(TEST(life_nr,col-1)) cellCount++;
+					if(TEST(life_nr,col)) cellCount++;
+					if(TEST(life_nr,col+1)) cellCount++;
+					if(TEST(life_cr,col-1)) cellCount++;
+					if(TEST(life_cr,col+1)) cellCount++;
+					if(alive && (cellCount < 2 || cellCount > 3)){
+						KILL(life[row],col);
+					}
+					else if(!alive && (cellCount == 3)){
+						REVIVE(life[row],col);
+					}
+
 				}
+					//copy info to small arrays
+				memcpy(life_pr,life_cr,sizeof(uint8));
+				memcpy(life_cr,life_nr,sizeof(uint8));
+				memcpy(life_nr,life[row],sizeof(uint8));
 			}
-			lcd_wordImage(life_image, 17, 50, pen ^= 0x02);			// ** delete **
 
 			// display life generation and generations/second on LCD
 			if (display_results(++generation)) break;
