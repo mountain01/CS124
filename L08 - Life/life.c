@@ -73,6 +73,7 @@
 // includes --------------------------------------------------------------------
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include "msp430.h"
 #include "RBX430-1.h"
 #include "RBX430_lcd.h"
@@ -94,11 +95,56 @@ uint16 pen = 1;							// ** delete **
 //	draw RLE pattern -----------------------------------------------------------
 void draw_rle_pattern(int row, int col, const uint8* object)
 {
-	life[75][4] = 0x07;					// ** delete **
-	lcd_point(37 << 1, 75 << 1, 7);		// ** delete **
-	lcd_point(38 << 1, 75 << 1, 7);		// ** delete **
-	lcd_point(39 << 1, 75 << 1, 7);		// ** delete **
-	return;
+	int y = 0;
+	int loopCount = 0;
+	while(*object && (*object++ != 'y'));
+	while(*object && !isdigit(*object)){
+		++object;
+	}
+	while(isdigit(*object)){
+		y = y * 10 + (*object++ - '0');
+	}
+
+	int myRow = row + y -1;
+	int myCol = col;
+	while(*object && (*object++ != '\n'));
+	while(*object){
+		if(isdigit(*object)){
+			loopCount = 0;
+			while(isdigit(*object)){
+				loopCount = loopCount * 10 + (*object++ - '0');
+			}
+		}
+		else{
+			loopCount = 1;
+		}
+		if(*object == 'b'){
+			while(loopCount){
+				myCol++;
+				loopCount--;
+			}
+		}
+		if(*object == 'o'){
+			while(loopCount){
+				myCol++;
+				lcd_point(myCol<<1,myRow<<1,7);
+				loopCount--;
+			}
+		}
+		if(*object == '$'){
+			while(loopCount){
+				myRow--;
+				myCol = col;
+				loopCount--;
+			}
+		}
+
+		if(*object == '!'){
+			return;
+		}
+
+		object++;
+	}
 } // end draw_rle_pattern
 
 
@@ -119,15 +165,18 @@ void main(void)
 		uint16 row, col;
 
 		// setup beginning life generation
-		init_life(BIRD);				// load a new life seed into LCD
-
-			// >>>>>>>> DELETE vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-			lcd_wordImage(life_image, 17, 50, 1);
-			lcd_cursor(10, 20);
-			printf("\b\tPress Any Key");
-			switches = 0;						// clear switches flag
-			while (!switches);					// wait for any switch
-			// >>>>>>>> DELETE ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+			if(switches == 1){
+				init_life(LIFE);
+			}
+			else if(switches == 4){
+				init_life(BOMB);
+			}
+			else if(switches == 8){
+				init_life(YOURS);
+			}
+			else{
+				init_life(BIRD);
+			}
 
 		WDT_Sec_Cnt = WDT_1SEC_CNT;		// reset WD 1 second counter
 		seconds = 0;					// clear second counter
@@ -136,31 +185,36 @@ void main(void)
 
 		while (1)						// next generation
 		{
-			memcpy(life_pr,life[NUM_ROWS-2], sizeof(uint8));
-			memcpy(life_cr,life[NUM_ROWS-3], sizeof(uint8));
-			memcpy(life_nr,life[NUM_ROWS-4], sizeof(uint8));
+			life_pr[9] = 14;
+			life_cr[9] = 4;
 			// for each life row (78 down to 1)
 			for (row = NUM_ROWS-2; row; row -= 1)
 			{
 				// for each life column (78 down to 1)
 				for (col = NUM_COLS-2; col; col -= 1)
 				{
+					int colIndex = col/8;
+					int shift1 = 0x80 >> ((col+1) % 8);
+					int shift2 = 0x80 >> ((col) % 8);
+					int shift3 = 0x80 >> ((col+2) % 8);
 					//cell calculations
 					int cellCount = 0;
-					int alive = TEST(life_cr,col);
-					if(TEST(life_pr,col-1)) cellCount++;
-					if(TEST(life_pr,col)) cellCount++;
-					if(TEST(life_pr,col+1)) cellCount++;
-					if(TEST(life_nr,col-1)) cellCount++;
-					if(TEST(life_nr,col)) cellCount++;
-					if(TEST(life_nr,col+1)) cellCount++;
-					if(TEST(life_cr,col-1)) cellCount++;
-					if(TEST(life_cr,col+1)) cellCount++;
+					int alive = life_cr[colIndex] & shift1;
+					if(life_pr[colIndex] & shift1) cellCount++;
+					if(life_pr[colIndex] & shift2) cellCount++;
+					if(life_pr[colIndex] & shift3) cellCount++;
+					if(life_nr[colIndex] & shift1) cellCount++;
+					if(life_nr[colIndex] & shift2) cellCount++;
+					if(life_nr[colIndex] & shift3) cellCount++;
+					if(life_cr[colIndex] & shift2) cellCount++;
+					if(life_cr[colIndex] & shift3) cellCount++;
 					if(alive && (cellCount < 2 || cellCount > 3)){
-						KILL(life[row],col);
+						life[row][colIndex] &= ~shift1;
+						lcd_point((col)<<1,(row)<<1,0);
 					}
 					else if(!alive && (cellCount == 3)){
-						REVIVE(life[row],col);
+						life[row][colIndex] |= shift1;
+						lcd_point((col)<<1,(row)<<1,7);
 					}
 
 				}
