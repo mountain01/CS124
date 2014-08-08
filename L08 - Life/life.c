@@ -156,7 +156,7 @@ void draw_rle_pattern(int row, int col, const uint8* object)
 // main ------------------------------------------------------------------------
 void main(void)
 {
-	RBX430_init(_1MHZ);					// init board
+	RBX430_init(_16MHZ);					// init board
 	ERROR2(lcd_init());					// init LCD
 	//lcd_volume(376);					// increase LCD brightness
 	watchdog_init();					// init watchdog

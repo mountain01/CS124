@@ -36,7 +36,7 @@
 #define LIFE_H_
 
 // defined constants -----------------------------------------------------------
-#define myCLOCK			1200000			// 1.2 Mhz clock
+#define myCLOCK			16*1200000			// 1.2 Mhz clock
 #define	WDT_CTL			WDT_MDLY_32		// WD configuration (SMCLK, ~32 ms)
 #define WDT_CPI			32000			// WDT Clocks Per Interrupt (@1 Mhz)
 #define	WDT_1SEC_CNT	myCLOCK/WDT_CPI	// WDT counts/second
