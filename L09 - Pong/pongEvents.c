@@ -74,7 +74,7 @@ void NEW_GAME_event()
 	lcd_printf("PRESS ANY SWITCH");
 	game_mode = IDLE;						// idle mode
 
-	sys_event |= START_GAME;
+	//sys_event |= SWITCH_1;
 
 
 	return;
@@ -157,5 +157,22 @@ void START_GAME_event(){
 }
 
 void LCD_UPDATE_event(){
-
+	return;
 }
+
+void NEW_RALLY_event(){
+	return;
+}
+void END_GAME_event(){
+	return;
+}
+void MISSED_BALL_event(){
+	return;
+}
+void SWITCH_2_event(){
+	return;
+}
+void SWITCH_4_event(){
+	return;
+}
+

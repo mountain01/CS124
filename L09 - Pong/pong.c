@@ -89,6 +89,14 @@ void main(void)
 				sys_event &= ~NEW_GAME;				// clear new game event
 				NEW_GAME_event();					// process new game
 			}
+			else if (sys_event & MISSED_BALL){
+				sys_event &= ~MISSED_BALL;
+				MISSED_BALL_event();
+			}
+			else if (sys_event & NEW_RALLY){
+				sys_event &= ~NEW_RALLY;
+				NEW_RALLY_event();
+			}
 			else if (sys_event & SWITCH_1){
 				sys_event |= START_GAME;
 				sys_event &= ~SWITCH_1;
@@ -98,9 +106,21 @@ void main(void)
 				sys_event &= ~START_GAME;
 				START_GAME_event();
 			}
+			else if (sys_event & END_GAME){
+				sys_event &= ~END_GAME;
+				END_GAME_event();
+			}
 			else if (sys_event & LCD_UPDATE){
 				sys_event &= ~LCD_UPDATE;
 				LCD_UPDATE_event();
+			}
+			else if (sys_event & SWITCH_2){
+				sys_event &= ~SWITCH_2;
+				SWITCH_2_event();
+			}
+			else if (sys_event & SWITCH_4){
+				sys_event &= ~SWITCH_4;
+				SWITCH_4_event();
 			}
 			else									// ????
 			{
