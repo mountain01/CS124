@@ -74,33 +74,9 @@ void NEW_GAME_event()
 	lcd_printf("PRESS ANY SWITCH");
 	game_mode = IDLE;						// idle mode
 
-	while (!(sys_event & 0x000f));			// ****REMOVE*****
-	sys_event &= ~0x000f;					// ****REMOVE*****
+	sys_event |= START_GAME;
 
-//************************************************************
-//	START_GAME EVENT (move to own event handler
-//************************************************************
 
-	// initialize variables...
-
-	// manufacture and draw paddle (malloc!!)
-	rightPaddle = new_paddle(RIGHT_POT, 157);
-	WDT_adc_cnt = 1;					// start sampling the paddles
-
-//************************************************************
-//	NEW_RALLY EVENT (move to own event handler
-//************************************************************
-
-	// manufacture new ball (NEW_RALLY)
-	ball = new_ball(80, 80);
-
-	// serve ball
-	dx = rand() % 2 ? -1 : 1;			// delta x
-	dy = rand() % 2 ? -1 : 1;			// delta y
-	ball_speed = BALL_SPEED;			// interrupt rate
-	TACCR0 = ball_speed;				// start timer
-	//WDT_lcd_cnt = 1;					// start LCD update (ONLY WHEN DEFINED)
-	game_mode = PLAY;					// enter play mode
 	return;
 } // end NEW_GAME_event
 
@@ -143,3 +119,43 @@ void MOVE_BALL_event(BALL* ball)
 	}
 	return;
 } // end MOVE_BALL_event
+
+void SWITCH_1_event(){
+	sys_event |= START_GAME;
+
+return;
+}
+
+void START_GAME_event(){
+
+	//************************************************************
+	//	START_GAME EVENT (move to own event handler
+	//************************************************************
+
+		// initialize variables...
+
+		// manufacture and draw paddle (malloc!!)
+		rightPaddle = new_paddle(RIGHT_POT, 157);
+		WDT_adc_cnt = 1;					// start sampling the paddles
+
+	//************************************************************
+	//	NEW_RALLY EVENT (move to own event handler
+	//************************************************************
+
+		// manufacture new ball (NEW_RALLY)
+		ball = new_ball(80, 80);
+
+		// serve ball
+		dx = rand() % 2 ? -1 : 1;			// delta x
+		dy = rand() % 2 ? -1 : 1;			// delta y
+		ball_speed = BALL_SPEED;			// interrupt rate
+		TACCR0 = ball_speed;				// start timer
+		//WDT_lcd_cnt = 1;					// start LCD update (ONLY WHEN DEFINED)
+		game_mode = PLAY;					// enter play mode
+		return;
+
+}
+
+void LCD_UPDATE_event(){
+
+}

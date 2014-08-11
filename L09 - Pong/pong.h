@@ -102,4 +102,8 @@ void MOVE_BALL_event(BALL* ball);
 void ADC_READ_event(PADDLE* paddle);
 void NEW_GAME_event(void);
 
+void SWITCH_1_event();
+void START_GAME_event();
+void LCD_UPDATE_event();
+
 #endif /*PONG_H_*/

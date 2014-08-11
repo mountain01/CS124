@@ -1,4 +1,5 @@
 //	pong.c	04/08/2014
+//	name: Matt Edwards
 //******************************************************************************
 //  Pong
 //
@@ -87,6 +88,19 @@ void main(void)
 			{
 				sys_event &= ~NEW_GAME;				// clear new game event
 				NEW_GAME_event();					// process new game
+			}
+			else if (sys_event & SWITCH_1){
+				sys_event |= START_GAME;
+				sys_event &= ~SWITCH_1;
+				SWITCH_1_event();
+			}
+			else if (sys_event & START_GAME){
+				sys_event &= ~START_GAME;
+				START_GAME_event();
+			}
+			else if (sys_event & LCD_UPDATE){
+				sys_event &= ~LCD_UPDATE;
+				LCD_UPDATE_event();
 			}
 			else									// ????
 			{
