@@ -106,4 +106,6 @@ void SWITCH_1_event();
 void START_GAME_event();
 void LCD_UPDATE_event();
 
+void drawGame(void);
+
 #endif /*PONG_H_*/

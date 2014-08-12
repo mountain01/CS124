@@ -29,7 +29,7 @@ int watchdog_init(void)
 	IE1 |= WDTIE;							// Enable WDT interrupt
 	WDT_debounce_cnt = 0;					// clear debounce count
 	WDT_adc_cnt = 0;						// read ADC period
-	WDT_lcd_cnt = 0;						// update LCD period
+	WDT_lcd_cnt = 1;						// update LCD period
 	WDT_cps_cnt = WDT_CPS;					// update seconds period
 	return 0;
 } // end watchdog_init

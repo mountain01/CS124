@@ -39,6 +39,7 @@
 volatile uint16 sys_event;				// pending events
 extern BALL* ball;						// game ball object
 extern PADDLE* rightPaddle;				// right paddle object
+extern PADDLE* leftPaddle;				// right paddle object
 
 //------------------------------------------------------------------------------
 //
@@ -83,6 +84,8 @@ void main(void)
 			{
 				sys_event &= ~ADC_READ;				// clear ADC event
 				ADC_READ_event(rightPaddle);		// process ADC read
+				ADC_READ_event(leftPaddle);		// process ADC read
+
 			}
 			else if (sys_event & NEW_GAME)			// new game event
 			{
@@ -98,7 +101,6 @@ void main(void)
 				NEW_RALLY_event();
 			}
 			else if (sys_event & SWITCH_1){
-				sys_event |= START_GAME;
 				sys_event &= ~SWITCH_1;
 				SWITCH_1_event();
 			}
