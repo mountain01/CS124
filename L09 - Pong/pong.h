@@ -27,7 +27,7 @@
 #define PONG_H_
 // system equates
 //
-#define myCLOCK	12000000			// clock speed
+#define myCLOCK	12000000*2			// clock speed
 #define WDT_CLK	32000				// 32 Khz WD clock (@1 Mhz)
 #define	WDT_CTL	WDT_MDLY_32			// WDT SMCLK, ~32ms
 #define	WDT_CPS	myCLOCK/WDT_CLK		// WD clocks / second count
@@ -55,7 +55,7 @@
 #define WDT_ADC			WDT_CPS/10		// 100 ms
 #define WDT_LCD			WDT_CPS/2		// 500 ms
 
-#define BEEP TBCCR0 = BEEP_COUNT; TBCCR2 = BEEP_COUNT >> 1; TB0_tone_on = 20;
+#define BEEP(tone,len) TBCCR0 = (tone); TBCCR2 = (tone) >> 1; TB0_tone_on = (len);
 #define DEBOUNCE_CNT	10
 
 enum MODE { IDLE, PLAY, COUNT, EOG, STAT };
@@ -107,5 +107,6 @@ void START_GAME_event();
 void LCD_UPDATE_event();
 
 void drawGame(void);
+void drawScores(void);
 
 #endif /*PONG_H_*/

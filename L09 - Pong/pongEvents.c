@@ -7,6 +7,7 @@
 //
 #include "msp430x22x4.h"
 #include <stdlib.h>
+#include <stdio.h>
 #include "RBX430-1.h"
 #include "RBX430_lcd.h"
 #include "pong.h"
@@ -67,20 +68,21 @@ PADDLE* new_paddle(int channel, int x)
 //
 void NEW_GAME_event()
 {
-	lcd_clear();							// clear LCD
 	lcd_volume(345);						// **increase as necessary**
-	lcd_backlight(ON);						// turn on LCD
-	lcd_wordImage(pong_image, 25, 35, 1);
-	lcd_mode(LCD_2X_FONT);					// turn 2x font on
-	lcd_cursor(20, 30);						// set display coordinates
-	printf("P O N G");
-	lcd_mode(~LCD_2X_FONT);					// turn 2x font off
-	lcd_cursor(30, 5);
-	lcd_printf("PRESS ANY SWITCH");
+	lcd_backlight(ON);
+	if(game_mode != EOG){					// turn on LCD
+		lcd_clear();							// clear LCD
+		lcd_wordImage(pong_image, 25, 35, 1);
+		lcd_mode(LCD_2X_FONT);					// turn 2x font on
+		lcd_cursor(20, 30);						// set display coordinates
+		printf("P O N G");
+		lcd_mode(~LCD_2X_FONT);					// turn 2x font off
+		lcd_cursor(30, 5);
+		lcd_printf("PRESS ANY SWITCH");
+
+		//sys_event |= SWITCH_1;
+	}
 	game_mode = IDLE;						// idle mode
-
-	//sys_event |= SWITCH_1;
-
 
 	return;
 } // end NEW_GAME_event
@@ -91,13 +93,20 @@ void NEW_GAME_event()
 //
 void ADC_READ_event(PADDLE* paddle)
 {
-	int pot = 1023-ADC_read(paddle->channel);	// sample potentiometer
+	int pot;
+	if(paddle->channel == 6){
+		pot = 1023-ADC_read(paddle->channel);	// sample potentiometer
+	} else {
+		pot = ADC_read(paddle->channel);
+	}
 
 	// check for paddle position change
 	if ((abs(pot - paddle->potValue) > POT_THRESHHOLD))
 	{
+		int offset = 1023 / 146;
 		paddle->potValue = pot;			// save old value
-		paddle->y = pot >> 3;			// update paddle position (fix)
+		paddle->y = (pot /offset)+7;			// update paddle position (fix)
+
 		drawPaddle(paddle);				// draw paddle
 	}
 	return;
@@ -119,7 +128,7 @@ void MOVE_BALL_event(BALL* ball)
 	drawBall(ball);						// ok, draw ball in new position
 
 	//left paddle
-	if((ball->x <=5)){
+	if((ball->x <=3)){
 		//top
 		if((ball->y < leftPaddle->y+8) && (ball->y > leftPaddle->y+4)){
 			dy += dy > 0 ? 2 : -2;
@@ -137,11 +146,14 @@ void MOVE_BALL_event(BALL* ball)
 		}
 		else {
 			sys_event |= MISSED_BALL;
+			P1Score++;
+			winner = 1;
 			hit = 0;
+			lcd_rectangle(ball->x-2,ball->y-2,5,5,16);
 		}
 	}
 	//right paddle
-	if((ball->x <=5)){
+	else if((ball->x >=HD_X_MAX-5)){
 		//top
 		if((ball->y < rightPaddle->y+8) && (ball->y > rightPaddle->y+4)){
 			dy += dy > 0 ? 2 : -2;
@@ -159,13 +171,20 @@ void MOVE_BALL_event(BALL* ball)
 		}
 		else {
 			sys_event |= MISSED_BALL;
+			P2Score++;
+			winner = 2;
 			hit = 0;
+			lcd_rectangle(ball->x-2,ball->y-2,5,5,16);
 		}
+	}
+	else {
+		hit = 0;
 	}
 	if (hit)
 	{
 		dx = -dx;						// reverse ball direction
-		BEEP;
+		BEEP(BEEP_COUNT, 20);
+		TACCR0 -= 5;
 	}
 	return;
 } // end MOVE_BALL_event
@@ -184,22 +203,23 @@ return;
 
 void START_GAME_event(){
 
-	//free ball/paddles
-	if(ball != NULL){
-		free(ball);
-		ball = NULL;
-	}
-	if(leftPaddle != NULL){
-		free(leftPaddle);
-		leftPaddle = NULL;
-	}
-	if(rightPaddle != NULL){
-		free(rightPaddle);
-		rightPaddle = NULL;
-	}
+//	//free ball/paddles
+//	if(ball != NULL){
+//		free(ball);
+//		ball = NULL;
+//	}
+//	if(leftPaddle != NULL){
+//		free(leftPaddle);
+//		leftPaddle = NULL;
+//	}
+//	if(rightPaddle != NULL){
+//		free(rightPaddle);
+//		rightPaddle = NULL;
+//	}
 
 	//initialize all variables
 	P1Score = P2Score = 0;
+	winner = rand() % 2;
 
 	drawGame();
 
@@ -225,15 +245,23 @@ void drawGame(){
 	lcd_rectangle(0,0,160,2,1);
 }
 
+void drawScores(){
+	if(game_mode == EOG){
+		if(P2Score == 4) P2Score++;
+		if(P2Score == 4) P1Score++;
+	}
+	lcd_mode(LCD_2X_FONT);
+	lcd_cursor(40,140);
+	printf("%d",P2Score);
+	lcd_cursor(120,140);
+	printf("%d",P1Score);
+	lcd_mode(~LCD_2X_FONT);
+}
+
 void LCD_UPDATE_event(){
 	if(game_mode == PLAY){
 		//Update scores
-		lcd_mode(LCD_2X_FONT);
-		lcd_cursor(40,140);
-		printf("%d",P2Score);
-		lcd_cursor(120,140);
-		printf("%d",P1Score);
-		lcd_mode(~LCD_2X_FONT);
+		drawScores();
 		//redraw center lines
 		drawGame();
 		//redraw paddles;
@@ -279,9 +307,40 @@ void NEW_RALLY_event(){
 	return;
 }
 void END_GAME_event(){
+	//mode = EOG
+	game_mode = EOG;
+	//free paddles
+	free(leftPaddle);
+	leftPaddle = NULL;
+	free(rightPaddle);
+	rightPaddle = NULL;
+	//ouput final scores and display appropriate award
+	lcd_clear();
+	drawScores();
+	char player[] = "Player ";
+	strcat(player, P1Score>P2Score?"1":"2");
+	lcd_mode(LCD_2X_FONT);
+	lcd_cursor(5,60);
+	printf("%s WINS",player);
+	lcd_mode(~LCD_2X_FONT);
 	return;
 }
 void MISSED_BALL_event(){
+	//raspberry
+	BEEP(BEEP_COUNT + 8000, 40);
+	//mode = idle
+	game_mode = IDLE;
+	//update scores
+	//free ball
+	free(ball);
+	//stop timer a
+	TACCR0 = 0;
+	//if score < 5 new rally else end game
+	if(P1Score < 5 &&  P2Score < 5){
+		sys_event |= NEW_RALLY;
+	} else {
+		sys_event |= END_GAME;
+	}
 	return;
 }
 void SWITCH_2_event(){
